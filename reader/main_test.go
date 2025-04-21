@@ -3,35 +3,86 @@ package reader
 import (
 	"github.com/stretchr/testify/require"
 	"testing"
+
+	. "nondv.io/glisp/types"
 )
 
 func TestSymbol(t *testing.T) {
-	requireSymbol(t, "hello", Read("hello"))
-	requireSymbol(t, "hello", Read(" hello   "))
-	requireSymbol(t, "abc+def-ghi/123", Read("abc+def-ghi/123"))
+	requireSymbol(t, "hello", readNoErr("hello"))
+	requireSymbol(t, "hello", readNoErr(" hello   "))
+	requireSymbol(t, "abc+def-ghi/123", readNoErr("abc+def-ghi/123"))
+
+	// These aren't reserved
+	requireSymbol(t, "nil", readNoErr("nil"))
+	requireSymbol(t, "t", readNoErr("t"))
 }
 
 func TestInteger(t *testing.T) {
-	requireInteger(t, 123, Read("123"))
-	requireInteger(t, 456, Read("456 "))
-	requireInteger(t, -9, Read("-9"))
-	requireInteger(t, 0, Read("000"))
-	requireInteger(t, 0, Read("-0"))
+	requireInteger(t, 123, readNoErr("123"))
+	requireInteger(t, 456, readNoErr("456 "))
+	requireInteger(t, -9, readNoErr("-9"))
+	requireInteger(t, 0, readNoErr("000"))
+	requireInteger(t, 0, readNoErr("-0"))
 
-	requireSymbol(t, "--123", Read(" --123"))
+	requireSymbol(t, "--123", readNoErr(" --123"))
+}
+
+func TestList(t *testing.T) {
+	requireEmptyList(t, readNoErr("()"))
+	requireEmptyList(t, readNoErr("(    \n   )"))
+
+	value := readNoErr("(())")
+	requireCons(t, value)
+	consPtr, _ := value.Value.(*Cons)
+	cons := *consPtr
+	requireEmptyList(t, cons.Car)
+	requireEmptyList(t, cons.Cdr)
+
+	value = readNoErr("(a   b(c))")
+	requireCons(t, value)
+	consPtr, _ = value.Value.(*Cons)
+	cons = *consPtr
+	requireSymbol(t, "a", cons.Car)
+
+	requireCons(t, cons.Cdr)
+	consPtr, _ = cons.Cdr.Value.(*Cons)
+	cons = *consPtr
+	requireSymbol(t, "b", cons.Car)
+
+	requireCons(t, cons.Cdr)
+	consPtr, _ = cons.Cdr.Value.(*Cons)
+	cons = *consPtr
+	// nested list (c)
+	requireCons(t, cons.Car)
+	consPtr, _ = cons.Car.Value.(*Cons)
+	requireSymbol(t, "c", (*consPtr).Car)
+	requireEmptyList(t, (*consPtr).Cdr)
+
+	requireEmptyList(t, cons.Cdr)
+}
+
+func requireEmptyList(t *testing.T, val Value) {
+	require.True(t, IsEmptyList(val))
+	require.Nil(t, val.Value)
+}
+
+func requireCons(t *testing.T, val Value) {
+	require.True(t, IsCons(val))
+	_, ok := val.Value.(*Cons)
+	require.True(t, ok)
 }
 
 func requireSymbol(t *testing.T, name string, val Value) {
-	require.Equal(t, SymbolReference, val.valueType)
-	strPointer, ok := val.value.(*string)
+	require.True(t, IsSymbol(val))
+	strPointer, ok := val.Value.(*string)
 
 	require.True(t, ok)
 	require.Equal(t, name, *strPointer)
 }
 
 func requireInteger(t *testing.T, expected int, val Value) {
-	require.Equal(t, IntegerReference, val.valueType)
-	actual, ok := val.value.(int)
+	require.True(t, IsInteger(val))
+	actual, ok := val.Value.(int)
 
 	require.True(t, ok)
 	require.Equal(t, expected, actual)
