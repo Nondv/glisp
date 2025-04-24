@@ -62,18 +62,18 @@ func TestList(t *testing.T) {
 }
 
 func requireEmptyList(t *testing.T, val Value) {
-	require.True(t, IsEmptyList(val))
+	require.True(t, val.IsEmptyList())
 	require.Nil(t, val.Value)
 }
 
 func requireCons(t *testing.T, val Value) {
-	require.True(t, IsCons(val))
+	require.True(t, val.IsCons())
 	_, ok := val.Value.(*Cons)
 	require.True(t, ok)
 }
 
 func requireSymbol(t *testing.T, name string, val Value) {
-	require.True(t, IsSymbol(val))
+	require.True(t, val.IsSymbol())
 	strPointer, ok := val.Value.(*string)
 
 	require.True(t, ok)
@@ -81,7 +81,7 @@ func requireSymbol(t *testing.T, name string, val Value) {
 }
 
 func requireInteger(t *testing.T, expected int, val Value) {
-	require.True(t, IsInteger(val))
+	require.True(t, val.IsInteger())
 	actual, ok := val.Value.(int)
 
 	require.True(t, ok)

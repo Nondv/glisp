@@ -1,8 +1,4 @@
-package bindings
-
-import (
-	. "nondv.io/glisp/types"
-)
+package types
 
 type Bindings struct {
 	SymbolName string
@@ -11,7 +7,7 @@ type Bindings struct {
 }
 
 func (b *Bindings) Lookup(sym Value) (Value, bool) {
-	if !IsSymbol(sym) {
+	if !sym.IsSymbol() {
 		panic("not a symbol")
 	}
 
@@ -29,17 +25,10 @@ func (b *Bindings) Lookup(sym Value) (Value, bool) {
 }
 
 func (b *Bindings) Assoc(sym Value, val Value) *Bindings {
-	if !IsSymbol(sym) {
+	if !sym.IsSymbol() {
 		panic("not a symbol")
 	}
 
 	name := *sym.Value.(*string)
 	return &Bindings{name, val, b}
-}
-
-func BuildBaseBindings() *Bindings {
-	result := &Bindings{"nil", BuildEmptyList(), nil}
-	result = result.Assoc(BuildSymbol("t"), BuildSymbol("t"))
-
-	return result
 }

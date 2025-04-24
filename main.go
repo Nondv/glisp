@@ -1,23 +1,29 @@
 package main
 
 import (
+	"bufio"
 	"errors"
-	"fmt"
-	"io"
 	"os"
 
 	"nondv.io/glisp/reader"
 	. "nondv.io/glisp/types"
-	. "nondv.io/glisp/types/bindings"
 )
 
 func main() {
-	inputBytes, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		panic("!!!!")
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		print("> ")
+		if !scanner.Scan() {
+			break
+		}
+		input := scanner.Text()
+		result, err := ReadEval(BuildBaseBindings(), input)
+		if err != nil {
+			println("Err!")
+		} else {
+			Print(result)
+		}
 	}
-
-	fmt.Println(ReadEval(BuildBaseBindings(), string(inputBytes)))
 }
 
 func ReadEval(bindings *Bindings, txt string) (Value, error) {
@@ -29,13 +35,12 @@ func ReadEval(bindings *Bindings, txt string) (Value, error) {
 	return Eval(bindings, sexp)
 }
 
-
 func Eval(bindings *Bindings, v Value) (Value, error) {
-	if IsInteger(v) || IsEmptyList(v) {
+	if v.IsInteger() || v.IsEmptyList() {
 		return v, nil
 	}
 
-	if IsSymbol(v) {
+	if v.IsSymbol() {
 		val, found := bindings.Lookup(v)
 		if !found {
 			return Value{}, errors.New("Undefined")
@@ -43,68 +48,71 @@ func Eval(bindings *Bindings, v Value) (Value, error) {
 		return val, nil
 	}
 
-	if isList(v) {
-		fn := (*v.Value.(*Cons)).Car
-		args := (*v.Value.(*Cons)).Cdr
+	if v.IsNativeFn() {
+		return Value{}, errors.New("Not eval-able")
+	}
+
+	if v.IsList() {
+		fn := *v.Car()
+		if fn.IsSymbol() && fn.SymbolName() == "lambda" {
+			return v, nil
+		}
+
+		args := *v.Cdr()
 		return callFn(bindings, fn, args)
 	}
 
 	panic("Unexpected eval argument")
 }
 
+func Print(v Value) {
+	println(v.PrintStr())
+}
 
 func callFn(bindings *Bindings, fn Value, args Value) (Value, error) {
-	if isList(fn) && isLambdaSym(listFirst(fn)) {
-		panic("TODO: call the lambda")
-	}
-
 	fn, err := Eval(bindings, fn)
 	if err != nil {
 		return Value{}, err
 	}
 
-	return args, nil
-}
-
-func isList(v Value) bool {
-	iter := v
-	for IsCons(iter) {
-		iter = (*iter.Value.(*Cons)).Cdr
+	if fn.IsNativeFn() {
+		resPointer, err := fn.NativeFn()(bindings, &args)
+		return *resPointer, err
 	}
 
-	return IsEmptyList(v)
-}
+	if fn.IsList() && isLambdaSym(*fn.Car()) {
+		parameter := *fn.Cdr().Car()
+		if !parameter.IsSymbol() {
+			return Value{}, errors.New("format: (lambda SYMBOL BODY)")
+		}
 
-func listFirst(list Value) Value {
-	return (*list.Value.(*Cons)).Car
+		lambdaBindings := bindings.Assoc(parameter, args)
+		res := BuildEmptyList()
+		body := fn.Cdr().Cdr()
+		for !body.IsEmptyList() {
+			res, err = Eval(lambdaBindings, *body.Car())
+			if err != nil {
+				return Value{}, err
+			}
+			body = body.Cdr()
+		}
+		return res, nil
+	}
+
+	return Value{}, errors.New("Not a function")
 }
 
 func isLambdaSym(v Value) bool {
-	return IsSymbol(v) && (*v.Value.(*string)) == "lambda"
+	return v.IsSymbol() && v.SymbolName() == "lambda"
 }
 
+func BuildBaseBindings() *Bindings {
+	result := &Bindings{"nil", BuildEmptyList(), nil}
+	// result = result.Assoc(BuildSymbol("t"), BuildSymbol("t"))
+	result = result.Assoc(BuildSymbol("eval"), BuildNativeFn(nativeEval))
+	result = result.Assoc(BuildSymbol("+"), BuildNativeFn(nativePlus))
+	result = result.Assoc(BuildSymbol("car"), BuildNativeFn(nativeCar))
+	result = result.Assoc(BuildSymbol("cdr"), BuildNativeFn(nativeCdr))
 
-// func Equals(a Value, b Value) bool {
-// 	a = Eval(a)
-// 	b = Eval(b)
-
-// 	if a.ValueType != b.ValueType {
-// 		return false
-// 	}
-
-// 	if IsEmptyList(a) {
-// 		return true
-// 	}
-
-// 	if IsSymbol(a) {
-// 		return *(a.Value.(*string)) == *(b.Value.(*string))
-// 	}
-
-// 	if IsInteger(a) {
-// 		return a.Value.(int) == b.Value.(int)
-// 	}
-
-// 	if IsList
-
-// 	panic("Unexpected args type for Equals")
-// }
+	return result
+}
