@@ -10,20 +10,15 @@ import (
 	. "nondv.io/glisp/types"
 )
 
-func Read(txt string) (Value, error) {
+func Read(txt string) (*Value, error) {
 	runes := []rune(txt)
 
 	value, _, err := parseNext(runes)
 	if err != nil {
-		return Value{}, err
+		return nil, err
 	}
 
 	return value, nil
-}
-
-func readNoErr(txt string) Value {
-	val, _ := Read(txt)
-	return val
 }
 
 // func printTokens(t *testing.T, runes []rune) {
@@ -39,10 +34,10 @@ func readNoErr(txt string) Value {
 // 	}
 // }
 
-func parseNext(runes []rune) (Value, int, error) {
+func parseNext(runes []rune) (*Value, int, error) {
 	token, endIndex, err := nextToken(runes)
 	if err != nil {
-		return Value{}, endIndex, err
+		return nil, endIndex, err
 	}
 
 	if token == "(" {
@@ -53,7 +48,7 @@ func parseNext(runes []rune) (Value, int, error) {
 	return value, endIndex, err
 }
 
-func parseList(runes []rune) (Value, int, error) {
+func parseList(runes []rune) (*Value, int, error) {
 	token, i, err := nextToken(runes)
 	if err != nil || token != "(" {
 		panic("parseList didn't find an opening paren")
@@ -66,7 +61,7 @@ func parseList(runes []rune) (Value, int, error) {
 		values.PushFront(val)
 		i += 1 + iOffset
 		if err != nil {
-			return Value{}, i, err
+			return nil, i, err
 		}
 
 		token, maybeClosingParenOffset, _ = nextToken(runes[i+1:])
@@ -74,15 +69,15 @@ func parseList(runes []rune) (Value, int, error) {
 
 	result := BuildEmptyList()
 	for e := values.Front(); e != nil; e = e.Next() {
-		result = BuildCons(e.Value.(Value), result)
+		result = BuildCons(e.Value.(*Value), result)
 	}
 
 	return result, i + 1 + maybeClosingParenOffset, nil
 }
 
-func tokenToValue(token string) (Value, error) {
+func tokenToValue(token string) (*Value, error) {
 	if token == "(" || token == ")" {
-		return Value{}, errors.New("Can't convert to value")
+		return nil, errors.New("Can't convert to value")
 	}
 
 	isInteger, err := regexp.MatchString("^-?\\d+$", token)

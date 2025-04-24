@@ -2,17 +2,12 @@ package types
 
 type Bindings struct {
 	SymbolName string
-	Value      Value
+	Value      *Value
 	Next       *Bindings
 }
 
-func (b *Bindings) Lookup(sym Value) (Value, bool) {
-	if !sym.IsSymbol() {
-		panic("not a symbol")
-	}
-
-	name := *sym.Value.(*string)
-
+func (b *Bindings) Lookup(sym *Value) (*Value, bool) {
+	name := sym.SymbolName()
 	next := b
 	for next != nil {
 		if name == next.SymbolName {
@@ -21,14 +16,9 @@ func (b *Bindings) Lookup(sym Value) (Value, bool) {
 		next = next.Next
 	}
 
-	return Value{}, false
+	return nil, false
 }
 
-func (b *Bindings) Assoc(sym Value, val Value) *Bindings {
-	if !sym.IsSymbol() {
-		panic("not a symbol")
-	}
-
-	name := *sym.Value.(*string)
-	return &Bindings{name, val, b}
+func (b *Bindings) Assoc(sym *Value, val *Value) *Bindings {
+	return &Bindings{sym.SymbolName(), val, b}
 }

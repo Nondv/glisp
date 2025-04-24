@@ -16,28 +16,28 @@ type Value struct {
 }
 
 type Cons struct {
-	Car Value
-	Cdr Value
+	Car *Value
+	Cdr *Value
 }
 
-func BuildSymbol(name string) Value {
-	return Value{symbolReference, &name}
+func BuildSymbol(name string) *Value {
+	return &Value{symbolReference, &name}
 }
 
-func BuildInteger(n int) Value {
-	return Value{integerReference, n}
+func BuildInteger(n int) *Value {
+	return &Value{integerReference, n}
 }
 
-func BuildCons(car Value, cdr Value) Value {
-	return Value{consReference, &Cons{car, cdr}}
+func BuildCons(car *Value, cdr *Value) *Value {
+	return &Value{consReference, &Cons{car, cdr}}
 }
 
-func BuildEmptyList() Value {
-	return Value{emptyListReference, nil}
+func BuildEmptyList() *Value {
+	return &Value{emptyListReference, nil}
 }
 
-func BuildNativeFn(f func(*Bindings, *Value) (*Value, error)) Value {
-	return Value{nativeFn, f}
+func BuildNativeFn(f func(*Bindings, *Value) (*Value, error)) *Value {
+	return &Value{nativeFn, f}
 }
 
 func (v *Value) IsSymbol() bool { return v.ValueType == symbolReference }
@@ -77,6 +77,10 @@ func (sym *Value) SymbolName() string {
 	return *sym.Value.(*string)
 }
 
+func (v *Value) IsLambdaSymbol() bool {
+	return v.IsSymbol() && v.SymbolName() == "lambda"
+}
+
 func (n *Value) ToInt() int {
 	if !n.IsInteger() {
 		panic("Not an integer")
@@ -90,7 +94,7 @@ func (c *Value) Car() *Value {
 		panic("Not a cons")
 	}
 
-	return &(*c.Value.(*Cons)).Car
+	return (*c.Value.(*Cons)).Car
 }
 
 func (c *Value) Cdr() *Value {
@@ -98,7 +102,7 @@ func (c *Value) Cdr() *Value {
 		panic("Not a cons")
 	}
 
-	return &(*c.Value.(*Cons)).Cdr
+	return (*c.Value.(*Cons)).Cdr
 }
 
 func (f *Value) NativeFn() (func(*Bindings, *Value) (*Value, error)) {

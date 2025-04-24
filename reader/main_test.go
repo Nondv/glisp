@@ -61,18 +61,18 @@ func TestList(t *testing.T) {
 	requireEmptyList(t, cons.Cdr)
 }
 
-func requireEmptyList(t *testing.T, val Value) {
+func requireEmptyList(t *testing.T, val *Value) {
 	require.True(t, val.IsEmptyList())
 	require.Nil(t, val.Value)
 }
 
-func requireCons(t *testing.T, val Value) {
+func requireCons(t *testing.T, val *Value) {
 	require.True(t, val.IsCons())
 	_, ok := val.Value.(*Cons)
 	require.True(t, ok)
 }
 
-func requireSymbol(t *testing.T, name string, val Value) {
+func requireSymbol(t *testing.T, name string, val *Value) {
 	require.True(t, val.IsSymbol())
 	strPointer, ok := val.Value.(*string)
 
@@ -80,10 +80,16 @@ func requireSymbol(t *testing.T, name string, val Value) {
 	require.Equal(t, name, *strPointer)
 }
 
-func requireInteger(t *testing.T, expected int, val Value) {
+func requireInteger(t *testing.T, expected int, val *Value) {
 	require.True(t, val.IsInteger())
 	actual, ok := val.Value.(int)
 
 	require.True(t, ok)
 	require.Equal(t, expected, actual)
+}
+
+
+func readNoErr(txt string) *Value {
+	val, _ := Read(txt)
+	return val
 }

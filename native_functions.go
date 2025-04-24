@@ -59,8 +59,7 @@ func nativePlus(bindings *Bindings, args *Value) (*Value, error) {
 		res += arg.ToInt()
 	}
 
-	resVal := BuildInteger(res)
-	return &resVal, nil
+	return BuildInteger(res), nil
 }
 
 func nativeEval(bindings *Bindings, args *Value) (*Value, error) {
@@ -69,9 +68,9 @@ func nativeEval(bindings *Bindings, args *Value) (*Value, error) {
 		return nil, err
 	}
 
-	result, err := Eval(bindings, *argument)
+	result, err := Eval(bindings, argument)
 
-	return &result, err
+	return result, err
 
 }
 
@@ -83,7 +82,7 @@ func evalArgs(bindings *Bindings, args *Value) (*Value, error) {
 	values := list.New()
 
 	for iter := args; !iter.IsEmptyList(); iter = iter.Cdr() {
-		v, err := Eval(bindings, *iter.Car())
+		v, err := Eval(bindings, iter.Car())
 		if err != nil {
 			return nil, err
 		}
@@ -92,10 +91,10 @@ func evalArgs(bindings *Bindings, args *Value) (*Value, error) {
 
 	result := BuildEmptyList()
 	for e := values.Front(); e != nil; e = e.Next() {
-		result = BuildCons(e.Value.(Value), result)
+		result = BuildCons(e.Value.(*Value), result)
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func requireOneArg(args *Value) (*Value, error) {

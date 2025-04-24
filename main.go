@@ -26,16 +26,16 @@ func main() {
 	}
 }
 
-func ReadEval(bindings *Bindings, txt string) (Value, error) {
+func ReadEval(bindings *Bindings, txt string) (*Value, error) {
 	sexp, err := reader.Read(txt)
 	if err != nil {
-		return sexp, err
+		return nil, err
 	}
 
 	return Eval(bindings, sexp)
 }
 
-func Eval(bindings *Bindings, v Value) (Value, error) {
+func Eval(bindings *Bindings, v *Value) (*Value, error) {
 	if v.IsInteger() || v.IsEmptyList() {
 		return v, nil
 	}
@@ -43,67 +43,62 @@ func Eval(bindings *Bindings, v Value) (Value, error) {
 	if v.IsSymbol() {
 		val, found := bindings.Lookup(v)
 		if !found {
-			return Value{}, errors.New("Undefined")
+			return nil, errors.New("Undefined")
 		}
 		return val, nil
 	}
 
 	if v.IsNativeFn() {
-		return Value{}, errors.New("Not eval-able")
+		return nil, errors.New("Not eval-able")
 	}
 
 	if v.IsList() {
-		fn := *v.Car()
+		fn := v.Car()
 		if fn.IsSymbol() && fn.SymbolName() == "lambda" {
 			return v, nil
 		}
 
-		args := *v.Cdr()
-		return callFn(bindings, fn, args)
+		return callFn(bindings, fn, v.Cdr())
 	}
 
 	panic("Unexpected eval argument")
 }
 
-func Print(v Value) {
+func Print(v *Value) {
 	println(v.PrintStr())
 }
 
-func callFn(bindings *Bindings, fn Value, args Value) (Value, error) {
+func callFn(bindings *Bindings, fn *Value, args *Value) (*Value, error) {
 	fn, err := Eval(bindings, fn)
 	if err != nil {
-		return Value{}, err
+		return nil, err
 	}
 
 	if fn.IsNativeFn() {
-		resPointer, err := fn.NativeFn()(bindings, &args)
-		return *resPointer, err
+		resPointer, err := fn.NativeFn()(bindings, args)
+		return resPointer, err
 	}
 
-	if fn.IsList() && isLambdaSym(*fn.Car()) {
-		parameter := *fn.Cdr().Car()
+	if fn.IsList() && fn.Car().IsLambdaSymbol() {
+		parameter := fn.Cdr().Car()
 		if !parameter.IsSymbol() {
-			return Value{}, errors.New("format: (lambda SYMBOL BODY)")
+			return nil, errors.New("format: (lambda SYMBOL BODY)")
 		}
 
 		lambdaBindings := bindings.Assoc(parameter, args)
 		res := BuildEmptyList()
 		body := fn.Cdr().Cdr()
 		for !body.IsEmptyList() {
-			res, err = Eval(lambdaBindings, *body.Car())
+			res, err = Eval(lambdaBindings, body.Car())
 			if err != nil {
-				return Value{}, err
+				return nil, err
 			}
 			body = body.Cdr()
 		}
 		return res, nil
 	}
 
-	return Value{}, errors.New("Not a function")
-}
-
-func isLambdaSym(v Value) bool {
-	return v.IsSymbol() && v.SymbolName() == "lambda"
+	return nil, errors.New("Not a function")
 }
 
 func BuildBaseBindings() *Bindings {
