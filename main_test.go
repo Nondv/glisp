@@ -21,6 +21,12 @@ func TestLisp(t *testing.T) {
 	require.Equal(t, "0", readEvalPrintNoErr(bindings, "(+)"))
 	require.Equal(t, "6", readEvalPrintNoErr(bindings, "(+ 1 2 3)"))
 
+	require.Equal(t, "()", readEvalPrintNoErr(bindings, "(= 1 2)"))
+	require.Equal(t, "t", readEvalPrintNoErr(bindings, "(= 1 1)"))
+	require.Equal(t, "()", readEvalPrintNoErr(bindings, "(= 1 -1)"))
+	require.Equal(t, "t", readEvalPrintNoErr(bindings, "(= (lambda x x) (lambda x x))"))
+	require.Equal(t, "()", readEvalPrintNoErr(bindings, "(= (lambda x x) (lambda y y))"))
+
 	require.Equal(t, "bla",
 		readEvalPrintNoErr(bindings, "((lambda X (car X)) bla)"))
 	require.Equal(t, "123",

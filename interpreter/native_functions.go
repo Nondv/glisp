@@ -11,6 +11,25 @@ import (
  * These are core language functions
  */
 
+func nativeEqual(bindings *Bindings, args *Value) (*Value, error) {
+	if args.ListLength() != 2 {
+		return nil, errors.New("= requires 2 arguments")
+	}
+	args, err := evalArgs(bindings, args)
+	if err != nil {
+		return nil, err
+	}
+
+	a := args.Car()
+	b := args.Cdr().Car()
+
+	if Equal(a, b) {
+		return BuildSymbol("t"), nil
+	} else {
+		return BuildEmptyList(), nil
+	}
+}
+
 func nativeCar(bindings *Bindings, args *Value) (*Value, error) {
 	args, err := evalArgs(bindings, args)
 	if err != nil {

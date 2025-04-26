@@ -116,3 +116,33 @@ func (c *Value) Cdr() *Value {
 func (f *Value) NativeFn() (func(*Bindings, *Value) (*Value, error)) {
 	return f.Value.(func(*Bindings, *Value) (*Value, error))
 }
+
+
+func Equal(a *Value, b *Value) bool {
+	if a.ValueType != b.ValueType {
+		return false
+	}
+
+
+	if a.IsEmptyList() {
+		return true
+	}
+
+	if a.IsSymbol() {
+		return a.SymbolName() == b.SymbolName()
+	}
+
+	if a.IsInteger() {
+		return a.ToInt() == b.ToInt()
+	}
+
+	if a.IsCons() {
+		return Equal(a.Car(), b.Car()) && Equal(a.Cdr(), b.Cdr())
+	}
+
+	if a.IsNativeFn() {
+		return a.Value == b.Value
+	}
+
+	panic("unexpected value type")
+}
