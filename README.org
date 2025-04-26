@@ -116,7 +116,6 @@ be bound manually to =()= and =(quote t)= respectively.
 * Unfinished business
 - Equality function
 - =define= for introducing new bindings
-- Reading multiple sexps from a file (currently only the first one's returned)
 - Errors from lisp
 - comments (the reader currently considers semicolon a symbol)
 - strings

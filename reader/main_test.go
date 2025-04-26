@@ -61,6 +61,29 @@ func TestList(t *testing.T) {
 	requireEmptyList(t, cons.Cdr)
 }
 
+func TestReadAll(t *testing.T) {
+	sexps, err := ReadAll("(hello-world)")
+	require.NoError(t, err)
+	require.Equal(t, 1, sexps.ListLength())
+
+	sexps, err = ReadAll("")
+	require.NoError(t, err)
+	require.Equal(t, 0, sexps.ListLength())
+
+	sexps, err = ReadAll("(1 (2 3)) (4) 5")
+	require.NoError(t, err)
+	require.Equal(t, 3, sexps.ListLength())
+	requireInteger(t, 5, sexps.Cdr().Cdr().Car())
+	requireInteger(t, 1, sexps.Car().Car())
+	require.Equal(t, 2, sexps.Car().Cdr().Car().ListLength())
+
+	sexps, err = ReadAll("(()")
+	require.NotNil(t, err)
+
+	sexps, err = ReadAll("()(")
+	require.NotNil(t, err)
+}
+
 func requireEmptyList(t *testing.T, val *Value) {
 	require.True(t, val.IsEmptyList())
 	require.Nil(t, val.Value)

@@ -10,6 +10,41 @@ import (
 	. "nondv.io/glisp/types"
 )
 
+type noNextTokenError struct{}
+type NoNextSexpError struct{}
+type UnfinishedSexpError struct {}
+
+func (e *noNextTokenError) Error() string { return "Reader couldn't find next token" }
+func (e *NoNextSexpError) Error() string  { return "No sexp found" }
+func (e *UnfinishedSexpError) Error() string { return "closing paren missing" }
+
+// Returns a list of sexps
+func ReadAll(txt string) (*Value, error) {
+	runes := []rune(txt)
+
+	sexps := list.New()
+	for offset := 0; offset < len(runes); {
+		value, endIndex, err := parseNext(runes[offset:])
+		offset += endIndex + 1
+
+		if err != nil {
+			if _, ok := err.(*NoNextSexpError); ok {
+				break
+			}
+
+			return nil, err
+		}
+		sexps.PushFront(value)
+	}
+
+	result := BuildEmptyList()
+	for e := sexps.Front(); e != nil; e = e.Next() {
+		result = BuildCons(e.Value.(*Value), result)
+	}
+
+	return result, nil
+}
+
 // Reads only 1 sexp
 func Read(txt string) (*Value, error) {
 	runes := []rune(txt)
@@ -22,22 +57,12 @@ func Read(txt string) (*Value, error) {
 	return value, nil
 }
 
-// func printTokens(t *testing.T, runes []rune) {
-// 	token, i, err := nextToken(runes)
-// 	for err == nil && i+1 < len(runes) {
-// 		t.Logf("%s\n", token)
-// 		var iOffset int
-// 		token, iOffset, err = nextToken(runes[i+1:])
-// 		i += 1 + iOffset
-// 	}
-// 	if err == nil {
-// 		t.Logf("%s\n", token)
-// 	}
-// }
-
 func parseNext(runes []rune) (*Value, int, error) {
 	token, endIndex, err := nextToken(runes)
 	if err != nil {
+		if _, ok := err.(*noNextTokenError); ok {
+			return nil, endIndex, &NoNextSexpError{}
+		}
 		return nil, endIndex, err
 	}
 
@@ -62,6 +87,9 @@ func parseList(runes []rune) (*Value, int, error) {
 		values.PushFront(val)
 		i += 1 + iOffset
 		if err != nil {
+			if _, ok := err.(*NoNextSexpError); ok {
+				return nil, i, &UnfinishedSexpError{}
+			}
 			return nil, i, err
 		}
 
@@ -101,8 +129,12 @@ func panicIfErr(err error) {
 // (token, index where it ends, error)
 func nextToken(runes []rune) (string, int, error) {
 	i := 0
-	for unicode.IsSpace(runes[i]) {
+	for i < len(runes) && unicode.IsSpace(runes[i]) {
 		i += 1
+	}
+
+	if i == len(runes) {
+		return "", i, &noNextTokenError{}
 	}
 
 	if isParen(runes[i]) {

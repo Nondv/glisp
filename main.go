@@ -24,11 +24,12 @@ func main() {
 		panic(err)
 	}
 
-	result, err := interpreter.ReadEval(bindings, string(contents))
+	lastResult, err := interpreter.ReadEvalAll(bindings, string(contents))
 	if err != nil {
 		panic(err)
 	}
-	interpreter.Print(result)
+
+	interpreter.Print(lastResult)
 }
 
 // example of extending the language

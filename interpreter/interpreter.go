@@ -36,7 +36,9 @@ func Repl(baseBindings *Bindings) {
 		input := scanner.Text()
 		result, err := ReadEval(baseBindings, input)
 		if err != nil {
-			println("Err!")
+			if _, ok := err.(*reader.NoNextSexpError); !ok {
+				println("Err: ", err.Error())
+			}
 		} else {
 			Print(result)
 		}
@@ -50,6 +52,24 @@ func ReadEval(bindings *Bindings, txt string) (*Value, error) {
 	}
 
 	return Eval(bindings, sexp)
+}
+
+// Evals all sexps and returns last value
+func ReadEvalAll(bindings *Bindings, txt string) (*Value, error) {
+	sexps, err := reader.ReadAll(txt)
+	if err != nil {
+		return sexps, err
+	}
+
+	var lastResult *Value
+	for iter := sexps; !iter.IsEmptyList(); iter = iter.Cdr() {
+		lastResult, err = Eval(bindings, iter.Car())
+		if err != nil {
+			return lastResult, err
+		}
+	}
+
+	return lastResult, nil
 }
 
 func Eval(bindings *Bindings, v *Value) (*Value, error) {
