@@ -64,6 +64,12 @@ This feature has some interesting consequences:
   properties. Read some PicoLisp docs to learn more.
 - *Symbolic programming* ?
 
+** No special literals except =()=
+
+In lisps usually you expect to see =nil= and =t=. This lisp doesn't treat them
+any special way and instead simply treats =()= as empty list. =nil= and =t= can
+be bound manually to =()= and =(quote t)= respectively.
+
 * Unfinished business
 - =define= for introducing new bindings
 - Reading multiple sexps from a file (currently only the first one's returned)
@@ -72,3 +78,4 @@ This feature has some interesting consequences:
 - strings
 - floats
 - arithmetic (currently, only =+= is implemented)
+- Reader macros. It'd be nice to have stuff like ='a= work
