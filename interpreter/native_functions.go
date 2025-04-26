@@ -117,6 +117,27 @@ func nativeLet(bindings *Bindings, args *Value) (*Value, error) {
 	return result, nil
 }
 
+func nativeIf(bindings *Bindings, args *Value) (*Value, error) {
+	if args.ListLength() != 3 {
+		return nil, errors.New("if requires 3 arguments: condition, then, else")
+	}
+
+	condition := args.Car()
+	thenBranch := args.Cdr().Car()
+	elseBranch := args.Cdr().Cdr().Car()
+
+	conditionVal, err := Eval(bindings, condition)
+	if err != nil {
+		return nil, err
+	}
+
+	if !conditionVal.IsEmptyList() {
+		return Eval(bindings, thenBranch)
+	}
+
+	return Eval(bindings, elseBranch)
+}
+
 func evalArgs(bindings *Bindings, args *Value) (*Value, error) {
 	if !args.IsList() {
 		panic("args aren't a list for some reason")

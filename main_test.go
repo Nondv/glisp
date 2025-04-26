@@ -54,6 +54,13 @@ func TestLisp(t *testing.T) {
 	// automatically before entering the function
 	code = "((lambda (x) (+ x x)) (+ 1 2 3))"
 	require.Equal(t, "12", readEvalPrintNoErr(bindings, code))
+
+
+	code = "(let ((value nil)) (if value 1 2))"
+	require.Equal(t, "2", readEvalPrintNoErr(bindings, code))
+	code = "(let ((value 1234)) (if value 1 2))"
+	require.Equal(t, "1", readEvalPrintNoErr(bindings, code))
+	// TODO: test that if only evaluates one branch
 }
 
 func TestNoLet(t *testing.T) {

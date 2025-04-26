@@ -65,7 +65,6 @@ This feature has some interesting consequences:
 - *Symbolic programming* ?
 
 * Unfinished business
-- =if= operator
 - =define= for introducing new bindings
 - Reading multiple sexps from a file (currently only the first one's returned)
 - Errors from lisp
