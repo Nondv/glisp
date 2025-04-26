@@ -156,6 +156,21 @@ func nativeIf(bindings *Bindings, args *Value) (*Value, error) {
 	return Eval(bindings, elseBranch)
 }
 
+func nativePrint(bindings *Bindings, args *Value) (*Value, error) {
+	args, err := evalArgs(bindings, args)
+	if err != nil {
+		return nil, err
+	}
+
+	lastValue := BuildEmptyList()
+	for iter := args; !iter.IsEmptyList(); iter = args.Cdr() {
+		lastValue = iter.Car()
+		Print(lastValue)
+	}
+
+	return lastValue, nil
+}
+
 func evalArgs(bindings *Bindings, args *Value) (*Value, error) {
 	if !args.IsList() {
 		panic("args aren't a list for some reason")

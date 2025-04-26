@@ -19,6 +19,7 @@ func BuildBaseBindings() *Bindings {
 	result = result.Assoc(BuildSymbol("car"), BuildNativeFn(nativeCar))
 	result = result.Assoc(BuildSymbol("cdr"), BuildNativeFn(nativeCdr))
 	result = result.Assoc(BuildSymbol("cons"), BuildNativeFn(nativeCons))
+	result = result.Assoc(BuildSymbol("print"), BuildNativeFn(nativePrint))
 
 	return result
 }
