@@ -47,6 +47,24 @@ func nativeCdr(bindings *Bindings, args *Value) (*Value, error) {
 	return argument.Cdr(), nil
 }
 
+func nativeCons(bindings *Bindings, args *Value) (*Value, error) {
+	if args.ListLength() != 2 {
+		return nil, errors.New("cons requires 2 arguments")
+	}
+
+	car, err := Eval(bindings, args.Car())
+	if err != nil {
+		return nil, err
+	}
+
+	cdr, err := Eval(bindings, args.Cdr().Car())
+	if err != nil {
+		return nil, err
+	}
+
+	return BuildCons(car, cdr), nil
+}
+
 func nativePlus(bindings *Bindings, args *Value) (*Value, error) {
 	args, err := evalArgs(bindings, args)
 	if err != nil {

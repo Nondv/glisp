@@ -61,6 +61,12 @@ func TestLisp(t *testing.T) {
 	code = "(let ((value 1234)) (if value 1 2))"
 	require.Equal(t, "1", readEvalPrintNoErr(bindings, code))
 	// TODO: test that if only evaluates one branch
+
+
+	code = "(cons 1 2)"
+	require.Equal(t, "(1 . 2)", readEvalPrintNoErr(bindings, code))
+	code = "(cons 1 (cons 2 ()))"
+	require.Equal(t, "(1 2)", readEvalPrintNoErr(bindings, code))
 }
 
 func TestNoLet(t *testing.T) {
