@@ -22,6 +22,9 @@ func BuildBaseBindings() *Bindings {
 }
 
 func Repl(baseBindings *Bindings) {
+	println("NOTE: this repl can only read-eval one line at a time")
+	println("If you want to eval something more complex, put it in a file and run")
+	println("    glisp yourcode.lisp")
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		print("> ")

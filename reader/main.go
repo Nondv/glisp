@@ -10,6 +10,7 @@ import (
 	. "nondv.io/glisp/types"
 )
 
+// Reads only 1 sexp
 func Read(txt string) (*Value, error) {
 	runes := []rune(txt)
 

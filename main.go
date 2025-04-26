@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"os"
 
 	"nondv.io/glisp/interpreter"
 	. "nondv.io/glisp/types"
@@ -11,7 +12,23 @@ func main() {
 	bindings := interpreter.BuildBaseBindings()
 	bindings = bindings.Assoc(BuildSymbol("sqr"), BuildNativeFn(nativeSqr))
 
-	interpreter.Repl(bindings)
+	// No arguments provided
+	if len(os.Args) == 1 {
+		interpreter.Repl(bindings)
+		return
+	}
+
+	filename := os.Args[1]
+	contents, err := os.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	result, err := interpreter.ReadEval(bindings, string(contents))
+	if err != nil {
+		panic(err)
+	}
+	interpreter.Print(result)
 }
 
 // example of extending the language
