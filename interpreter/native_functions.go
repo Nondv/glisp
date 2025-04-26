@@ -190,6 +190,31 @@ func nativePrint(bindings *Bindings, args *Value) (*Value, error) {
 	return lastValue, nil
 }
 
+func nativeDefine(bindings *Bindings, args *Value) (*Value, error) {
+	if args.ListLength() != 2 {
+		return nil, errors.New("define requires 2 arguments")
+	}
+
+	sym := args.Car()
+	if !sym.IsSymbol() {
+		return nil, errors.New("syntax: (define SYMBOL SEXP) ")
+	}
+
+	sexp := args.Cdr().Car()
+
+	value, err := Eval(bindings, sexp)
+	if err != nil {
+		return nil, err
+	}
+
+	// can't just assign directly because the head would be pointing at itself
+	// so first create a copy so the new head points at that
+	bindingsCopy := *bindings
+	*bindings = *bindingsCopy.Assoc(sym, value)
+
+	return value, nil
+}
+
 func evalArgs(bindings *Bindings, args *Value) (*Value, error) {
 	if !args.IsList() {
 		panic("args aren't a list for some reason")

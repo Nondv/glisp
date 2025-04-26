@@ -14,6 +14,7 @@ func BuildBaseBindings() *Bindings {
 	// result = result.Assoc(BuildSymbol("t"), BuildSymbol("t"))
 	result = result.Assoc(BuildSymbol("eval"), BuildNativeFn(nativeEval))
 	result = result.Assoc(BuildSymbol("let"), BuildNativeFn(nativeLet))
+	result = result.Assoc(BuildSymbol("define"), BuildNativeFn(nativeDefine))
 	result = result.Assoc(BuildSymbol("if"), BuildNativeFn(nativeIf))
 	result = result.Assoc(BuildSymbol("="), BuildNativeFn(nativeEqual))
 	result = result.Assoc(BuildSymbol("+"), BuildNativeFn(nativePlus))

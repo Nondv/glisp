@@ -114,7 +114,6 @@ be bound manually to =()= and =(quote t)= respectively.
 #+end_src
 
 * Unfinished business
-- =define= for introducing new bindings
 - Errors from lisp
 - comments (the reader currently considers semicolon a symbol)
 - strings
