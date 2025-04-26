@@ -29,6 +29,10 @@ func TestLisp(t *testing.T) {
 		readEvalPrintNoErr(bindings, "((lambda X (car (cdr X))) 1 2 3)"))
 	require.Equal(t, "579",
 		readEvalPrintNoErr(bindings, "((lambda X (+ (car (cdr X)) (car X))) 123 456)"))
+	require.Equal(t, "()",
+		readEvalPrintNoErr(bindings, "(car ())"))
+	require.Equal(t, "()",
+		readEvalPrintNoErr(bindings, "(cdr ())"))
 
 	code := "((lambda quote (quote a b c d)) lambda X X)"
 	require.Equal(t, "(a b c d)", readEvalPrintNoErr(bindings, code))

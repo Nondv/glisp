@@ -90,6 +90,10 @@ func (n *Value) ToInt() int {
 }
 
 func (c *Value) Car() *Value {
+	if c.IsEmptyList() {
+		return c
+	}
+
 	if !c.IsCons() {
 		panic("Not a cons")
 	}
@@ -98,6 +102,10 @@ func (c *Value) Car() *Value {
 }
 
 func (c *Value) Cdr() *Value {
+	if c.IsEmptyList() {
+		return c
+	}
+
 	if !c.IsCons() {
 		panic("Not a cons")
 	}

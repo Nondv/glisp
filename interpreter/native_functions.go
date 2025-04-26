@@ -22,7 +22,7 @@ func nativeCar(bindings *Bindings, args *Value) (*Value, error) {
 		return nil, err
 	}
 
-	if !argument.IsCons() {
+	if !argument.IsCons() && !argument.IsEmptyList() {
 		return nil, errors.New("Not a cons cell")
 	}
 
@@ -40,7 +40,7 @@ func nativeCdr(bindings *Bindings, args *Value) (*Value, error) {
 		return nil, err
 	}
 
-	if !argument.IsCons() {
+	if !argument.IsCons() && !argument.IsEmptyList() {
 		return nil, errors.New("Not a cons cell")
 	}
 
