@@ -5,6 +5,13 @@ Based on a [[https://gist.github.com/Nondv/1dddf200d5d4f7c98be6917165c524b0][stu
 
 Was mainly developed to practice Golang
 
+* Usage
+
+#+begin_src bash
+go build
+./glisp yourcode.lisp
+#+end_src
+
 * Features
 
 ** Golang-embeddable and extendable
