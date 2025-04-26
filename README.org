@@ -70,7 +70,51 @@ In lisps usually you expect to see =nil= and =t=. This lisp doesn't treat them
 any special way and instead simply treats =()= as empty list. =nil= and =t= can
 be bound manually to =()= and =(quote t)= respectively.
 
+* Examples
+** =mapcar= and =list=
+#+begin_src lisp
+  (let ((quote (lambda ARG (car ARG)))
+        (not (lambda (x) (if x () (quote true))))
+        (mapcar (lambda (f lst)
+                  (if (not lst)
+                      lst
+                      (cons (f (car lst)) (mapcar f (cdr lst))))))
+        (list (lambda ARG
+                (mapcar eval ARG))))
+    (list 1 2 (list 4 5) list))
+
+  ;; ==> (1 2 (4 5) (lambda ARG (mapcar eval ARG)))
+#+end_src
+
+** =reduce=, =push-last=, and =->>= (pipeline operator)
+
+#+begin_src lisp
+  (let (;; depends on: not, list
+
+        (reduce (lambda (initial-value f lst)
+                  (if (not lst)
+                      initial-value
+                      (reduce (f initial-value (car lst)) f (cdr lst)))))
+
+        (push-last (lambda (x lst)
+                     (cons (car lst)
+                           (if (cdr lst)
+                               (push-last x (cdr lst))
+                               (list x)))))
+
+        (->> (lambda ->>ARGS
+               (eval (reduce (car ->>ARGS) (lambda (a e) (push-last a e)) (cdr ->>ARGS))))))
+    (->> 100
+         (+ 20)
+         (+ 3)
+         (list)
+         (push-last 456)))
+
+  ;; ==> (123 456)
+#+end_src
+
 * Unfinished business
+- Equality function
 - =define= for introducing new bindings
 - Reading multiple sexps from a file (currently only the first one's returned)
 - Errors from lisp
