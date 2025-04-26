@@ -51,6 +51,13 @@ func TestLisp(t *testing.T) {
 	code = `((lambda X (eval (car X))) (+ 123 111))`
 	require.Equal(t, "234", readEvalPrintNoErr(bindings, code))
 
+	code = `
+            (let ((quote (lambda X ;; comment
+                           (car X))))
+               ;; another one
+               (quote t))`
+	require.Equal(t, "t", readEvalPrintNoErr(bindings, code))
+
 	code = `(let ((double (lambda X
                                 (let ((x (eval (car X))))
                                    (+ x x))))

@@ -115,7 +115,6 @@ be bound manually to =()= and =(quote t)= respectively.
 
 * Unfinished business
 - Errors from lisp
-- comments (the reader currently considers semicolon a symbol)
 - strings
 - floats
 - arithmetic (currently, only =+= is implemented)

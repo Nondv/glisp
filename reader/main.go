@@ -137,12 +137,25 @@ func nextToken(runes []rune) (string, int, error) {
 		return "", i, &noNextTokenError{}
 	}
 
+	if runes[i] == ';' {
+		for i < len(runes) && runes[i] != '\n' {
+			i++
+		}
+
+		if i == len(runes) {
+			return "", i, &noNextTokenError{}
+		}
+
+		token, iOffset, err := nextToken(runes[i:])
+		return token, i + iOffset, err
+	}
+
 	if isParen(runes[i]) {
 		return string(runes[i]), i, nil
 	}
 
 	beginIndex := i
-	for i < len(runes) && !unicode.IsSpace(runes[i]) && !isParen(runes[i]) {
+	for i < len(runes) && !unicode.IsSpace(runes[i]) && !isParen(runes[i]) && runes[i] != ';' {
 		i += 1
 	}
 
