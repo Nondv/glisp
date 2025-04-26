@@ -1,0 +1,75 @@
+* glisp - PoC lisp in Golang
+
+Based on a [[https://gist.github.com/Nondv/1dddf200d5d4f7c98be6917165c524b0][stupid-lisp PoC]] I've written a while ago. Inspired by LISP-1.5 (see
+[[https://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf][LISP 1.5 Programmer's Manual]] by McCarthy) and [[https://picolisp.com][PicoLisp]].
+
+Was mainly developed to practice Golang
+
+* Features
+
+** Golang-embeddable and extendable
+The interpreter simply needs a =Bindigings= list which can be extended with
+native functions via =BuildNativeFn=.
+
+** Code is /actually/ data
+
+Every function is simply a list starting with =lambda= symbol (or a native
+function which is bound directly from Golang).
+
+This means that non-native functions can be inspected as lists and even modified
+(although not sure why you'd want that).
+
+Also the way a lambda is invoked is its parameters are passed to it
+*unevaluated*. Consider this:
+
+#+begin_src lisp
+  (let ((inc (lambda ARG
+               (+ ARG 1))))
+    (inc 122))
+#+end_src
+
+This will throw an error as ARG will be simply =(x)= which isn't even an
+integer.
+
+In order to make this work, we need to evaluate the arguments explicitly:
+
+
+#+begin_src lisp
+  (let ((inc (lambda ARG
+               (let ((first-arg (eval (car ARG))))
+                 (+ first-arg 1)))))
+    (inc 122))
+#+end_src
+
+or implicitly (which is how you'd expect a lambda to work):
+
+#+begin_src lisp
+  (let ((inc (lambda (x)
+               (+ x 1))))
+    (inc 122))
+#+end_src
+
+
+This feature has some interesting consequences:
+
+- *No macros needed*. Macros are basically lisp functions that are called at
+  compile time and they work with their arguments unevaluated. This is a
+  completely different plane of execution. "Code is data" is a bit of a buzzword
+  at this point because in modern lisps it really isn't (only at compile time).
+- *Quote* isn't special. =(let ((quote (lambda ARG (car ARG)))) (quote a ignored))=
+- *Dynamic binding*. Since code is actually data, it means binding has to happen
+  at the moment of evaluation which may be in entirely different context from
+  where the function was created. While dynamic binding isn't popular (only
+  emacs and bash/etc come to mind from popular software), it does have some fun
+  properties. Read some PicoLisp docs to learn more.
+- *Symbolic programming* ?
+
+* Unfinished business
+- =if= operator
+- =define= for introducing new bindings
+- Reading multiple sexps from a file (currently only the first one's returned)
+- Errors from lisp
+- comments (the reader currently considers semicolon a symbol)
+- strings
+- floats
+- arithmetic (currently, only =+= is implemented)
