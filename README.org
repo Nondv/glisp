@@ -96,26 +96,31 @@ be bound manually to =()= and =(quote t)= respectively.
 ** =reduce=, =push-last=, and =->>= (pipeline operator)
 
 #+begin_src lisp
-  (let (;; depends on: not, list
+  ;; depends on: not, list
 
-        (reduce (lambda (initial-value f lst)
-                  (if (not lst)
-                      initial-value
-                      (reduce (f initial-value (car lst)) f (cdr lst)))))
+  (define reduce
+          (lambda (initial-value f lst)
+            (if (not lst)
+                initial-value
+                (reduce (f initial-value (car lst)) f (cdr lst)))))
 
-        (push-last (lambda (x lst)
-                     (cons (car lst)
-                           (if (cdr lst)
-                               (push-last x (cdr lst))
-                               (list x)))))
+  (define push-last
+          (lambda (x lst)
+            (cons (car lst)
+                  (if (cdr lst)
+                      (push-last x (cdr lst))
+                      (list x)))))
 
-        (->> (lambda ->>ARGS
-               (eval (reduce (car ->>ARGS) (lambda (a e) (push-last a e)) (cdr ->>ARGS))))))
-    (->> 100
-         (+ 20)
-         (+ 3)
-         (list)
-         (push-last 456)))
+  (define ->>
+          (lambda ->>ARGS
+            (eval (reduce (car ->>ARGS)
+                          push-last
+                          (cdr ->>ARGS)))))
+  (->> 100
+       (+ 20)
+       (+ 3)
+       (list)
+       (push-last 456))
 
   ;; ==> (123 456)
 #+end_src
