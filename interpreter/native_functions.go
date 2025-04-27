@@ -3,6 +3,7 @@ package interpreter
 import (
 	"container/list"
 	"errors"
+	"os"
 
 	. "nondv.io/glisp/types"
 )
@@ -213,6 +214,26 @@ func nativeDefine(bindings *Bindings, args *Value) (*Value, error) {
 	*bindings = *bindingsCopy.Assoc(sym, value)
 
 	return value, nil
+}
+
+func nativeLoad(bindings *Bindings, args *Value) (*Value, error) {
+	if args.ListLength() != 1 {
+		return nil, errors.New("load requires 1 argument")
+	}
+	argument, err := Eval(bindings, args.Car())
+	if err != nil {
+		return nil, err
+	}
+	if !argument.IsString() {
+		return nil, errors.New("load requires a string as its argument")
+	}
+
+	contents, err := os.ReadFile(argument.ToStr())
+	if err != nil {
+		return nil, err
+	}
+
+	return ReadEvalAll(bindings, string(contents))
 }
 
 func evalArgs(bindings *Bindings, args *Value) (*Value, error) {

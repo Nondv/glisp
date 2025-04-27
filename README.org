@@ -125,6 +125,20 @@ be bound manually to =()= and =(quote t)= respectively.
   ;; ==> (123 456)
 #+end_src
 
+** "Libraries"
+#+begin_src lisp
+  (load "lang/core.lisp")
+
+  (->> 100
+       (+ 20)
+       (+ 3)
+       (list)
+       (push-last 456)
+       (print))
+
+  ;; ==> (123 456)
+#+end_src
+
 * Unfinished business
 - Errors from lisp
 - Better string escaping. Currently, only =\"= is supported and there's no way
