@@ -5,6 +5,7 @@ import (
 	"errors"
 	"regexp"
 	"strconv"
+	"strings"
 	"unicode"
 
 	. "nondv.io/glisp/types"
@@ -13,10 +14,12 @@ import (
 type noNextTokenError struct{}
 type NoNextSexpError struct{}
 type UnfinishedSexpError struct {}
+type UnfinishedStringError struct {}
 
 func (e *noNextTokenError) Error() string { return "Reader couldn't find next token" }
 func (e *NoNextSexpError) Error() string  { return "No sexp found" }
 func (e *UnfinishedSexpError) Error() string { return "closing paren missing" }
+func (e *UnfinishedStringError) Error() string { return "closing quote missing" }
 
 // Returns a list of sexps
 func ReadAll(txt string) (*Value, error) {
@@ -117,7 +120,18 @@ func tokenToValue(token string) (*Value, error) {
 		return BuildInteger(value), nil
 	}
 
+	if token[0] == '"' {
+		return BuildString(prepareString(token)), nil
+	}
+
 	return BuildSymbol(token), nil
+}
+
+func prepareString(tokenString string) string {
+	result := tokenString[1:len(tokenString)-1] // remove surrounding quotes
+	result = strings.Replace(result, `\"`, `"`, -1) // escape quotes
+	// TODO: more sophisticated escape, e.g. \\, \n
+	return result
 }
 
 func panicIfErr(err error) {
@@ -152,6 +166,18 @@ func nextToken(runes []rune) (string, int, error) {
 
 	if isParen(runes[i]) {
 		return string(runes[i]), i, nil
+	}
+
+	if runes[i] == '"' {
+		beginIndex := i
+		i++
+		for i < len(runes) && (runes[i] != '"' || runes[i-1] == '\\') {
+			i++
+		}
+		if i == len(runes) {
+			return "", i, &UnfinishedStringError{}
+		}
+		return string(runes[beginIndex:i+1]), i, nil
 	}
 
 	beginIndex := i

@@ -1,13 +1,12 @@
 package types
 
-type Symbol string
-
 const (
 	symbolReference    = "sym"
 	integerReference   = "int"
 	consReference      = "cons"
 	emptyListReference = "()"
-	nativeFn           = "<native fn>"
+	nativeFnReference  = "<native fn>"
+	stringReference    = "string"
 )
 
 type Value struct {
@@ -21,7 +20,7 @@ type Cons struct {
 }
 
 func BuildSymbol(name string) *Value {
-	return &Value{symbolReference, &name}
+	return &Value{symbolReference, name}
 }
 
 func BuildInteger(n int) *Value {
@@ -37,14 +36,19 @@ func BuildEmptyList() *Value {
 }
 
 func BuildNativeFn(f func(*Bindings, *Value) (*Value, error)) *Value {
-	return &Value{nativeFn, f}
+	return &Value{nativeFnReference, f}
+}
+
+func BuildString(s string) *Value {
+	return &Value{stringReference, s}
 }
 
 func (v *Value) IsSymbol() bool { return v.ValueType == symbolReference }
 func (v *Value) IsInteger() bool { return v.ValueType == integerReference }
 func (v *Value) IsCons() bool { return v.ValueType == consReference }
 func (v *Value) IsEmptyList() bool { return v.ValueType == emptyListReference }
-func (v *Value) IsNativeFn() bool { return v.ValueType == nativeFn }
+func (v *Value) IsNativeFn() bool { return v.ValueType == nativeFnReference }
+func (v *Value) IsString() bool { return v.ValueType == stringReference }
 
 func (v *Value) IsList() bool {
 	iter := v
@@ -74,7 +78,7 @@ func (sym *Value) SymbolName() string {
 		panic("Not a symbol")
 	}
 
-	return *sym.Value.(*string)
+	return sym.Value.(string)
 }
 
 func (v *Value) IsLambdaSymbol() bool {
@@ -87,6 +91,14 @@ func (n *Value) ToInt() int {
 	}
 
 	return n.Value.(int)
+}
+
+func (s *Value) ToStr() string {
+	if !s.IsString() {
+		panic("Not a string")
+	}
+
+	return s.Value.(string)
 }
 
 func (c *Value) Car() *Value {
@@ -141,6 +153,10 @@ func Equal(a *Value, b *Value) bool {
 	}
 
 	if a.IsNativeFn() {
+		return a.Value == b.Value
+	}
+
+	if a.IsString() {
 		return a.Value == b.Value
 	}
 

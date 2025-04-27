@@ -40,6 +40,9 @@ func TestLisp(t *testing.T) {
 	require.Equal(t, "()",
 		readEvalPrintNoErr(bindings, "(cdr ())"))
 
+	require.Equal(t, `"abc"`, readEvalPrintNoErr(bindings, `"abc"`))
+	require.Equal(t, `"abc \"def\""`, readEvalPrintNoErr(bindings, `"abc \"def\""`))
+
 	code := "((lambda quote (quote a b c d)) lambda X X)"
 	require.Equal(t, "(a b c d)", readEvalPrintNoErr(bindings, code))
 

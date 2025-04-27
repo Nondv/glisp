@@ -127,7 +127,10 @@ be bound manually to =()= and =(quote t)= respectively.
 
 * Unfinished business
 - Errors from lisp
-- strings
+- Better string escaping. Currently, only =\"= is supported and there's no way
+  to provide =\"= as actual part of a string
+- =format= function to output text (=print= provides =read=-able output, which
+  is different).
 - floats
 - arithmetic (currently, only =+= is implemented)
 - Reader macros. It'd be nice to have stuff like ='a= work

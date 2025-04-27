@@ -76,7 +76,7 @@ func ReadEvalAll(bindings *Bindings, txt string) (*Value, error) {
 }
 
 func Eval(bindings *Bindings, v *Value) (*Value, error) {
-	if v.IsInteger() || v.IsEmptyList() {
+	if v.IsInteger() || v.IsEmptyList() || v.IsString() {
 		return v, nil
 	}
 

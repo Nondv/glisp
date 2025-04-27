@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 func (v *Value) PrintStr() string {
@@ -36,6 +37,11 @@ func (v *Value) PrintStr() string {
 
 	if v.IsNativeFn() {
 		return "<native fn>"
+	}
+
+	if v.IsString() {
+		escaped := strings.Replace(v.ToStr(), `"`, `\"`, -1)
+		return fmt.Sprintf(`"%s"`, escaped)
 	}
 
 	panic("Can't convert to string")

@@ -61,6 +61,17 @@ func TestList(t *testing.T) {
 	requireEmptyList(t, cons.Cdr)
 }
 
+func TestString(t *testing.T) {
+	requireString(t, "Hello world! 213", readNoErr(`"Hello world! 213"`))
+	requireString(t, `I say "hey"`, readNoErr(`"I say \"hey\""`))
+
+	code := `
+          "hello,
+\"world\""
+        `
+	requireString(t, "hello,\n\"world\"", readNoErr(code))
+}
+
 func TestReadAll(t *testing.T) {
 	sexps, err := ReadAll("(hello-world)")
 	require.NoError(t, err)
@@ -97,16 +108,24 @@ func requireCons(t *testing.T, val *Value) {
 
 func requireSymbol(t *testing.T, name string, val *Value) {
 	require.True(t, val.IsSymbol())
-	strPointer, ok := val.Value.(*string)
+	str, ok := val.Value.(string)
 
 	require.True(t, ok)
-	require.Equal(t, name, *strPointer)
+	require.Equal(t, name, str)
 }
 
 func requireInteger(t *testing.T, expected int, val *Value) {
 	require.True(t, val.IsInteger())
 	actual, ok := val.Value.(int)
 
+	require.True(t, ok)
+	require.Equal(t, expected, actual)
+}
+
+func requireString(t *testing.T, expected string, val *Value) {
+	require.True(t, val.IsString())
+
+	actual, ok := val.Value.(string)
 	require.True(t, ok)
 	require.Equal(t, expected, actual)
 }
