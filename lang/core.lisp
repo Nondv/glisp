@@ -40,3 +40,26 @@
           (eval (reduce (car ->>ARGS)
                         push-last
                         (cdr ->>ARGS)))))
+
+
+(define cadr (lambda (x) (car (cdr x))))
+(define caar (lambda (x) (car (car x))))
+
+(define progn
+        (lambda __PROGN-BODY
+          (reduce () (lambda (_ e) (eval e)) __PROGN-BODY)))
+
+(define when
+        (lambda __WHEN-ARGS
+          (if (eval (car __WHEN-ARGS))
+              (eval (cons (quote progn) (cdr __WHEN-ARGS)))
+              ())))
+
+(define cond
+        (lambda __COND-ARGS
+          (let ((aux (lambda (clauses)
+                       (when clauses
+                         (if (eval (caar clauses))
+                             (cadr (car clauses))
+                             (aux (cdr clauses)))))))
+            (eval (aux __COND-ARGS)))))
