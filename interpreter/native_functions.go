@@ -91,17 +91,35 @@ func nativePlus(bindings *Bindings, args *Value) (*Value, error) {
 		return nil, err
 	}
 
-	res := 0
-	for iter := args; iter.IsCons(); iter = iter.Cdr() {
-		arg := iter.Car()
-		if !arg.IsInteger() {
-			return nil, errors.New("non-integer argument")
+	if args.Car().IsInteger() {
+		res := 0
+		for iter := args; iter.IsCons(); iter = iter.Cdr() {
+			arg := iter.Car()
+			if !arg.IsInteger() {
+				return nil, errors.New("non-integer argument")
+			}
+
+			res += arg.ToInt()
 		}
 
-		res += arg.ToInt()
+		return BuildInteger(res), nil
 	}
 
-	return BuildInteger(res), nil
+	if args.Car().IsString() {
+		res := ""
+		for iter := args; iter.IsCons(); iter = iter.Cdr() {
+			arg := iter.Car()
+			if !arg.IsString() {
+				return nil, errors.New("non-string argument")
+			}
+
+			res += arg.ToStr()
+		}
+
+		return BuildString(res), nil
+	}
+
+	return nil, errors.New("type not supported")
 }
 
 func nativeEval(bindings *Bindings, args *Value) (*Value, error) {
