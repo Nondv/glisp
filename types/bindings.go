@@ -22,3 +22,7 @@ func (b *Bindings) Lookup(sym *Value) (*Value, bool) {
 func (b *Bindings) Assoc(sym *Value, val *Value) *Bindings {
 	return &Bindings{sym.SymbolName(), val, b}
 }
+
+func (b *Bindings) AssocSym(sym string, val *Value) *Bindings {
+	return b.Assoc(BuildSymbol(sym), val)
+}

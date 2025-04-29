@@ -30,9 +30,10 @@ Also the way a lambda is invoked is its parameters are passed to it
 *unevaluated*. Consider this:
 
 #+begin_src lisp
-  (let ((inc (lambda ARG
+  (let ((x 122)
+        (inc (lambda ARG
                (+ ARG 1))))
-    (inc 122))
+    (inc x))
 #+end_src
 
 This will throw an error as ARG will be simply =(x)= which isn't even an
@@ -42,18 +43,20 @@ In order to make this work, we need to evaluate the arguments explicitly:
 
 
 #+begin_src lisp
-  (let ((inc (lambda ARG
+  (let ((x 122)
+        (inc (lambda ARG
                (let ((first-arg (eval (car ARG))))
                  (+ first-arg 1)))))
-    (inc 122))
+    (inc x))
 #+end_src
 
 or implicitly (which is how you'd expect a lambda to work):
 
 #+begin_src lisp
-  (let ((inc (lambda (x)
+  (let ((x 122)
+        (inc (lambda (x)
                (+ x 1))))
-    (inc 122))
+    (inc x))
 #+end_src
 
 
@@ -139,6 +142,19 @@ be bound manually to =()= and =(quote t)= respectively.
   ;; ==> (123 456)
 #+end_src
 
+** DSLs for embedding
+Since this lisp can be embedded and extended, one could use this as a DSL. It's
+also got potential for interactive programming. I made an example of a Go web
+server with handlers written in glisp.
+
+See [[file:examples/embedded/webapi/webapi.go][examples/embedded/webapi/webapi.go]].
+
+Run with:
+
+#+begin_src bash
+go run nondv.io/glisp/examples/embedded/webapi
+#+end_src
+
 * Unfinished business
 - Errors from lisp
 - Better string escaping. Currently, only =\"= is supported and there's no way
@@ -148,3 +164,5 @@ be bound manually to =()= and =(quote t)= respectively.
 - floats
 - arithmetic (currently, only =+= is implemented)
 - Reader macros. It'd be nice to have stuff like ='a= work
+- Emacs integration
+  - Requires REPL to accept multi-line input
